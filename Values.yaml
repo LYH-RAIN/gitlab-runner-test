@@ -1,0 +1,55 @@
+## GitLab Runner 配置文件
+concurrent: 2 # A global setting for job concurrency that applies to all runner sections defined in this `config.toml` file
+log_level: "warning"
+check_interval: 3 # Value in seconds
+## 注册 GitLab Runner 的令牌
+runnerRegistrationToken: "${GitlabRunnerToken}"
+
+## GitLab 实例的 URL
+gitlabUrl: "${GitlabUrl}"
+
+## Docker executor 的配置
+runners:
+  privileged: true
+  image: "alpine:latest"
+  tags: "kubernetes,k8s"
+  builds:
+    enabled: true
+  config: |
+    [[runners]]
+      name = "kubernetes-runner"
+      executor = "kubernetes"
+      namespace = "gitlab-runner"
+      ephemeral_storage_request = "30Gi"
+      ephemeral_storage_limit = "30Gi"
+      [runners.cache]
+        type = "s3"
+        shared = true
+        [runners.cache.s3]
+          ServerAddress = "oss-ap-southeast-1.aliyuncs.com"
+          AccessKey = "${OssAccessKey}"
+          SecretKey = "${OssSecretKey}"
+          BucketName = "gitlab-renyun-runner"
+          BucketLocation = "ap-southeast-1"
+          Insecure = false
+      [runners.kubernetes]
+        namespace = "gitlab-runner"
+        cpu_limit = "2"
+        cpu_request = "2"
+        memory_limit = "4Gi"
+        memory_request = "4Gi"
+        pod_labels_overwrite_allowed = ".*"
+        [runners.kubernetes.pod_labels]
+          "app" = "acs-gitlab-runner"
+          "alibabacloud.com/compute-qos" = "best-effort"
+          "alibabacloud.com/compute-class" = "general-purpose"
+      [[runners.feature_flags]]
+        FF_USE_POD_ACTIVE_DEADLINE_SECONDS = true
+
+## 服务账号和权限
+rbac:
+  create: true
+serviceAccount:
+  create: true
+
+
