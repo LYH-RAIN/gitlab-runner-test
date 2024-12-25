@@ -51,5 +51,13 @@ rbac:
   create: true
 serviceAccount:
   create: true
+## 资源限制
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
 
 
